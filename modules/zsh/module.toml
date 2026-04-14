@@ -1,0 +1,24 @@
+[module]
+name = "zsh"
+description = "Zsh 셸 설정 (.zshrc, .zprofile, oh-my-zsh 통합)"
+version = "1.0.0"
+category = "shell"
+
+[dependencies]
+modules = []
+brews = ["zsh", "fzf", "ripgrep", "eza", "bat", "zoxide"]
+casks = []
+
+[dotfiles]
+# 심링크로 관리: alias, 함수, PATH 등 .zshrc/.zprofile 변경은 repo에 그대로 반영됨
+# (addalias/rmalias 같은 sed 편집도 심링크 타겟을 따라가 repo 파일이 수정됨)
+links = [
+  { src = "dotfiles/.zshrc", target = "~/.zshrc", template = false },
+  { src = "dotfiles/.zprofile", target = "~/.zprofile", template = false },
+]
+
+[template_vars]
+
+[hooks]
+pre_install = ""
+post_install = "install.sh"

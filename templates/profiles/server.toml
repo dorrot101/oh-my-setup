@@ -1,0 +1,16 @@
+# oh-my-setup 프로파일: 서버/미니 환경 (항상 켜짐)
+[profile]
+name = "server"
+description = "서버/미니 환경 (항상 켜짐, GUI 최소화)"
+
+[modules]
+enabled = ["git", "zsh"]
+skip = ["karabiner", "raycast"]
+
+[macos.defaults]
+# 덮개 닫아도 sleep 안 함
+lid_close_action = "no-sleep"
+# 디스플레이 sleep 비활성화 (0 = 안 꺼짐)
+display_sleep = 0
+# 시스템 sleep 비활성화
+system_sleep = 0

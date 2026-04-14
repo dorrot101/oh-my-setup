@@ -1,0 +1,18 @@
+# oh-my-setup framework .gitignore
+.DS_Store
+*.swp
+*.swo
+*~
+.env
+.env.local
+
+# Raycast 내보내기 (개인 설정 — private dotfiles repo로)
+*.rayconfig
+
+# 개인 닷파일 스냅샷은 ~/dotfiles (private repo)에서만 관리
+modules/raycast/dotfiles/com.raycast.macos.plist
+modules/raycast/dotfiles/scripts/
+modules/zsh/dotfiles/.zshrc
+modules/zsh/dotfiles/.zprofile
+modules/git/dotfiles/.gitconfig
+modules/karabiner/dotfiles/karabiner.json

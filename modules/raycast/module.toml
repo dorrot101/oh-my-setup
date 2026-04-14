@@ -1,0 +1,30 @@
+[module]
+name = "raycast"
+description = "Raycast 런처 설정 및 스크립트 관리"
+version = "1.0.0"
+category = "system"
+
+[dependencies]
+modules = []
+brews = []
+casks = []  # Raycast는 직접 설치 (brew cask 아님)
+
+[dotfiles]
+# 심링크 가능한 Raycast 데이터:
+#   - plist: 환경설정/핫키
+#   - scripts 디렉토리: Script Commands (.sh/.py 등 직접 작성한 것)
+# 심링크 불가 (SQLite DB에 저장):
+#   - Extensions, Quicklinks, Snippets, Aliases, Hotkey bindings
+#   → Raycast Settings → Advanced → Export/Import (.rayconfig) 사용
+#     export된 .rayconfig를 dotfiles/raycast.rayconfig로 커밋해두고,
+#     새 기기에서 Raycast → Import 수동 실행
+links = [
+  { src = "dotfiles/com.raycast.macos.plist", target = "~/Library/Preferences/com.raycast.macos.plist", template = false },
+  { src = "dotfiles/scripts", target = "~/.config/raycast/scripts", template = false },
+]
+
+[template_vars]
+
+[hooks]
+pre_install = ""
+post_install = ""

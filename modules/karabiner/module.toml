@@ -1,0 +1,21 @@
+[module]
+name = "karabiner"
+description = "Karabiner-Elements 키 매핑 설정"
+version = "1.0.0"
+category = "system"
+
+[dependencies]
+modules = []
+brews = []
+casks = ["karabiner-elements"]
+
+[dotfiles]
+links = [
+  { src = "dotfiles/karabiner.json", target = "~/.config/karabiner/karabiner.json", template = false },
+]
+
+[template_vars]
+
+[hooks]
+pre_install = ""
+post_install = ""

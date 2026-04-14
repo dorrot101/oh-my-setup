@@ -1,0 +1,10 @@
+# oh-my-setup 프로파일: 일반 노트북 환경
+[profile]
+name = "laptop"
+description = "일반 노트북 환경"
+
+[modules]
+enabled = ["git", "zsh", "karabiner", "raycast"]
+
+[macos.defaults]
+# 랩탑 기본값 — 특별한 시스템 설정 변경 없음

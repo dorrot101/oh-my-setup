@@ -1,0 +1,120 @@
+#!/usr/bin/env bash
+# oh-my-setup (oms) — macOS 개발 환경 관리 CLI
+# https://github.com/username/oh-my-setup
+set -euo pipefail
+
+OMS_VERSION="0.1.0"
+OMS_HOME="${OMS_HOME:-$HOME/.oh-my-setup}"
+OMS_DOTFILES="${OMS_DOTFILES:-$HOME/dotfiles}"
+
+# 코어 라이브러리 로드
+source "${OMS_HOME}/lib/core.sh"
+
+# ── 메인 라우터 ────────────────────────────────────
+main() {
+  local command="${1:-status}"
+  shift 2>/dev/null || true
+
+  case "$command" in
+    init)         cmd_init "$@" ;;
+    sync)         cmd_sync "$@" ;;
+    apply)        cmd_apply "$@" ;;
+    status)       cmd_status "$@" ;;
+    module)       cmd_module "$@" ;;
+    snapshot)     cmd_snapshot "$@" ;;
+    backup)       cmd_backup "$@" ;;
+    brew)         cmd_brew "$@" ;;
+    link)         cmd_link "$@" ;;
+    diff)         cmd_diff "$@" ;;
+    log)          cmd_log "$@" ;;
+    doctor)       cmd_doctor "$@" ;;
+    config)       cmd_config "$@" ;;
+    rollback)     cmd_rollback "$@" ;;
+    self-update)  cmd_self_update "$@" ;;
+    uninstall)    cmd_uninstall "$@" ;;
+    --version|-V) echo "oh-my-setup v${OMS_VERSION}" ;;
+    --help|-h)    cmd_help ;;
+    *)            oms_error "알 수 없는 명령어: $command"; cmd_help; exit 1 ;;
+  esac
+}
+
+# ── 명령어 스텁 (Phase 1에서 순차 구현) ───────────
+cmd_init()        { source "${OMS_HOME}/lib/init.sh";     oms_init "$@"; }
+cmd_sync()        { source "${OMS_HOME}/lib/backup.sh"
+                    source "${OMS_HOME}/lib/sync.sh";     oms_sync "$@"; }
+cmd_snapshot()    { source "${OMS_HOME}/lib/config.sh"
+                    source "${OMS_HOME}/lib/backup.sh"
+                    source "${OMS_HOME}/lib/snapshot.sh";  oms_snapshot "$@"; }
+cmd_backup()      { source "${OMS_HOME}/lib/backup.sh";   oms_backup_cmd "$@"; }
+cmd_apply()       { source "${OMS_HOME}/lib/config.sh"
+                    source "${OMS_HOME}/lib/detect.sh"
+                    source "${OMS_HOME}/lib/brew.sh"
+                    source "${OMS_HOME}/lib/link.sh"
+                    source "${OMS_HOME}/lib/macos.sh"
+                    oms_apply "$@"; }
+
+oms_apply() {
+  local opts=()
+  while [[ $# -gt 0 ]]; do
+    opts+=("$1"); shift
+  done
+
+  # Phase 1: Brew 패키지 설치
+  oms_brew_install ${opts[@]+"${opts[@]}"}
+
+  # Phase 2: 닷파일 심링크 적용
+  oms_link ${opts[@]+"${opts[@]}"}
+
+  # Phase 3: macOS 시스템 설정 (프로파일 기반)
+  oms_macos_apply ${opts[@]+"${opts[@]}"}
+
+  echo ""
+  oms_ok "전체 적용 완료!"
+}
+cmd_status()      { oms_info "oh-my-setup v${OMS_VERSION}"; echo "TODO: 상태 대시보드 구현"; }
+cmd_module()      { echo "TODO: 모듈 관리 구현"; }
+cmd_brew()        { source "${OMS_HOME}/lib/detect.sh"
+                    source "${OMS_HOME}/lib/brew.sh";     oms_brew_cmd "$@"; }
+cmd_link()        { source "${OMS_HOME}/lib/config.sh"
+                    source "${OMS_HOME}/lib/link.sh";     oms_link_cmd "$@"; }
+cmd_diff()        { cd "$OMS_DOTFILES" && git diff; }
+cmd_log()         { cd "$OMS_DOTFILES" && git log --oneline -20; }
+cmd_doctor()      { source "${OMS_HOME}/lib/doctor.sh";   oms_doctor "$@"; }
+cmd_config()      { echo "TODO: 설정 관리 구현"; }
+cmd_rollback()    { echo "TODO: 롤백 구현"; }
+cmd_self_update() { source "${OMS_HOME}/lib/update.sh";   oms_self_update "$@"; }
+cmd_uninstall()   { source "${OMS_HOME}/scripts/uninstall.sh"; }
+
+cmd_help() {
+  cat <<'EOF'
+사용법: oms <command> [options]
+
+명령어:
+  init              초기 설정 마법사
+  snapshot          현재 상태를 캡처하여 저장소에 반영
+  sync              Git 동기화 (pull → apply → push)
+  apply             설정 전체 적용
+  backup <sub>      백업 관리 (list, restore, cleanup)
+  status            상태 대시보드
+  module <sub>      모듈 관리 (list, enable, disable, status, create)
+  brew <sub>        Brew 관리 (snapshot, diff, cleanup)
+  link              닷파일 심링크 적용
+  diff              닷파일 변경사항 확인
+  log               동기화 히스토리
+  doctor            환경 건강 진단
+  config <sub>      설정 관리 (get, set, edit)
+  rollback          이전 상태로 복원
+  self-update       프레임워크 업데이트
+
+옵션:
+  -v, --verbose     상세 출력
+  -q, --quiet       최소 출력
+  -y, --yes         자동 승인
+  --dry-run         미리보기 (실행 안 함)
+  --no-color        컬러 비활성화
+  -h, --help        도움말
+  -V, --version     버전 정보
+EOF
+}
+
+main "$@"
