@@ -71,7 +71,9 @@ oms_apply() {
   echo ""
   oms_ok "전체 적용 완료!"
 }
-cmd_status()      { oms_info "oh-my-setup v${OMS_VERSION}"; echo "TODO: 상태 대시보드 구현"; }
+cmd_status()      { source "${OMS_HOME}/lib/config.sh"
+                    source "${OMS_HOME}/lib/link.sh"
+                    source "${OMS_HOME}/lib/status.sh"; oms_status_cmd "$@"; }
 cmd_module()      { echo "TODO: 모듈 관리 구현"; }
 cmd_brew()        { source "${OMS_HOME}/lib/detect.sh"
                     source "${OMS_HOME}/lib/brew.sh";     oms_brew_cmd "$@"; }
