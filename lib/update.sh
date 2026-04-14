@@ -39,26 +39,30 @@ oms_check_update() {
     cd "$OMS_DOTFILES" 2>/dev/null || exit
     git fetch origin --quiet 2>/dev/null || exit
 
+    local upstream
+    upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")"
+    [[ -z "$upstream" ]] && exit
+
     local behind
-    behind="$(git rev-list --count HEAD..origin/main 2>/dev/null || echo 0)"
+    behind="$(git rev-list --count "HEAD..${upstream}" 2>/dev/null || echo 0)"
 
     if [[ "$behind" -gt 0 ]]; then
       # 변경 요약 생성
       local changes
-      changes="$(git log --oneline HEAD..origin/main 2>/dev/null)"
+      changes="$(git log --oneline HEAD..${upstream} 2>/dev/null)"
       local source_machine
-      source_machine="$(git log --format='%s' HEAD..origin/main 2>/dev/null | \
+      source_machine="$(git log --format='%s' HEAD..${upstream} 2>/dev/null | \
                         grep -oP '(?<=from )[^:]+' | head -1)"
 
       # 새 brew 패키지 확인
       local new_brews
-      new_brews="$(git diff HEAD..origin/main -- Brewfile 2>/dev/null | \
+      new_brews="$(git diff HEAD..${upstream} -- Brewfile 2>/dev/null | \
                    grep '^+' | grep -v '^+++' | sed 's/^+//' | \
                    grep -E '^(brew|cask) ' | sed 's/brew "\(.*\)"/\1/; s/cask "\(.*\)"/\1/' || true)"
 
       # 변경된 닷파일 확인
       local changed_files
-      changed_files="$(git diff --name-only HEAD..origin/main 2>/dev/null | \
+      changed_files="$(git diff --name-only HEAD..${upstream} 2>/dev/null | \
                        grep -v '.oms-state' | head -5 || true)"
 
       # 알림 출력
@@ -103,24 +107,32 @@ oms_self_update() {
 
   cd "$OMS_HOME" || { oms_error "프레임워크 디렉토리를 찾을 수 없습니다"; return 1; }
 
+  # 현재 upstream 브랜치 자동 감지 (master/main 둘 다 대응)
+  local upstream
+  upstream="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null || echo "")"
+  if [[ -z "$upstream" ]]; then
+    oms_error "upstream 브랜치가 설정되지 않았습니다. 'git branch --set-upstream-to=origin/<branch>'를 실행하세요."
+    return 1
+  fi
+
   git fetch origin --quiet 2>/dev/null
   local behind
-  behind="$(git rev-list --count HEAD..origin/main 2>/dev/null || echo 0)"
+  behind="$(git rev-list --count "HEAD..${upstream}" 2>/dev/null || echo 0)"
 
   if [[ "$behind" -eq 0 ]]; then
     oms_ok "oh-my-setup은 최신 버전입니다."
     return 0
   fi
 
-  oms_info "${behind}개의 프레임워크 업데이트가 있습니다."
+  oms_info "${behind}개의 프레임워크 업데이트가 있습니다. (${upstream})"
 
   if $check_only; then
-    git log --oneline HEAD..origin/main
+    git log --oneline "HEAD..${upstream}"
     return 0
   fi
 
   if oms_confirm "프레임워크를 업데이트하시겠습니까?"; then
-    git pull origin main --quiet
+    git pull --ff-only --quiet
     oms_ok "oh-my-setup이 업데이트되었습니다!"
     local new_version
     new_version="$(cat "${OMS_HOME}/.version" 2>/dev/null || echo "unknown")"
