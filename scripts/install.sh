@@ -193,7 +193,22 @@ else
   fi
 fi
 
-# ── 8. 완료 ──────────────────────────────────────
+# ── 8. oh-my-zsh 설치 ────────────────────────────
+# zsh 모듈의 .zshrc가 oh-my-zsh에 의존하므로 심링크 전에 먼저 설치
+if [[ -d "$HOME/.oh-my-zsh" ]]; then
+  skip "oh-my-zsh 이미 설치됨"
+else
+  info "oh-my-zsh 설치 중..."
+  # --unattended: 프롬프트 없이 설치
+  # --keep-zshrc: 기존 ~/.zshrc 덮어쓰지 않음 (심링크 보호)
+  sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended --keep-zshrc >/dev/null 2>&1 \
+    || warn "oh-my-zsh 설치 실패. 수동으로 설치하세요."
+  if [[ -d "$HOME/.oh-my-zsh" ]]; then
+    ok "oh-my-zsh 설치 완료"
+  fi
+fi
+
+# ── 9. 완료 ──────────────────────────────────────
 echo ""
 echo -e "${GREEN}${BOLD}oh-my-setup 설치가 완료되었습니다!${NC}"
 echo ""
@@ -201,6 +216,7 @@ echo "  설치된 항목:"
 echo "    ✓ Homebrew"
 echo "    ✓ GitHub CLI (gh)"
 echo "    ✓ oh-my-setup 프레임워크: ${OMS_HOME}"
+[[ -d "$HOME/.oh-my-zsh" ]] && echo "    ✓ oh-my-zsh"
 [[ -d "$OMS_DOTFILES" ]] && echo "    ✓ dotfiles: ${OMS_DOTFILES}"
 echo ""
 echo "  다음 단계:"
